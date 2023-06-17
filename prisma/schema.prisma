@@ -1,5 +1,25 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+model Log {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sphere    Sphere   @relation(fields: [sphereId], references: [id])
+  sphereId  Int      @unique
+}
+
+model Sphere {
+  id     Int    @id @default(autoincrement())
+  title  String @unique
+  user   User   @relation(fields: [userId], references: [id])
+  userId Int    @unique
+  logs   Log[]
+}
+
+model User {
+  id      Int      @id @default(autoincrement())
+  email   String   @unique
+  name    String?
+  spheres Sphere[]
+}
 
 generator client {
   provider = "prisma-client-js"
