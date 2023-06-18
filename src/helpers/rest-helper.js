@@ -17,7 +17,6 @@ function restHelper(model) {
     post: async (req, res, next) => {
       try {
         const item = await model.create({ data: req.body });
-
         res.status(StatusCodes.ACCEPTED).json(item);
 
         next();

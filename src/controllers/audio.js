@@ -1,6 +1,28 @@
 const e = require("express");
 const hume = require("../utils/hume");
 const openai = require("../utils/openai");
+const multer = require("multer");
+
+const { MulterAzureStorage } = require("multer-azure-blob-storage");
+
+const azureStorage = new MulterAzureStorage({
+  connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
+  accessKey: process.env.AZURE_STORAGE_ACCESS_KEY,
+  accountName: process.env.AZURE_STORAGE_ACCOUNT_NAME,
+  containerName: process.env.AZURE_STORAGE_CONTAINER_NAME,
+  containerAccessLevel: "blob",
+});
+
+const upload = multer({
+  storage: azureStorage,
+});
+
+const uploadAudio = upload.single("audio");
+
+const handleFiles = async (req, res, next) => {
+  console.log(req.file);
+  res.send("hello");
+};
 
 const EMOTIONS = [
   "Calmness",
@@ -35,8 +57,18 @@ const receiveFromHume = async (job_id) => {
       accept: "application/json; charset=utf-8",
     })
     .then(({ data }) => {
-      console.log("Hume Data from Job Prediction:", data)
-      return data
+      // collect data from script
+
+      const requestData = JSON.stringify({
+        data: data,
+        models: {
+          language: {
+            granularity: "passage",
+          },
+        },
+      });
+
+      res.send(requestData);
     })
     .catch((error) => console.error(error));
     return emotions;
@@ -166,6 +198,8 @@ const postMessage = async (req, res, next) => {
 
 module.exports = {
   submitToHume,
+  uploadAudio,
+  handleFiles,
   getPredictions,
   postMessage,
   combinePredictions,
