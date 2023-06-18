@@ -1,43 +1,49 @@
-const prisma = require("../utils/prisma");
+const { StatusCodes } = require("http-status-codes");
 
-const express = require("express");
-const router = express.Router();
-
-router.get("/:id", function (req, res, next) {
-  prisma.post.findUnique({ where: { id: req.params.id } });
-});
-
-router.post("/", function (req, res, next) {
-  prisma.post.create({ data: req.body });
-});
-
-router.patch("/:id", function (req, res, next) {
-  prisma.post.update({ where: { id: req.params.id }, data: req.body });
-});
-
-router.delete("/:id", function (req, res, next) {
-  prisma.post.delete({ where: { id: req.params.id } });
-});
-
-const construcRestHandlers = (schemaName) => {
+function restHelper(model) {
   return {
-    get: (req, res) => {
-      prisma.user.findUnique({
-        where: {
-          id: 1,
-        },
-      });
+    get: (req, res, next) => {
+      try {
+        const item = model.findUnique({ where: req.query });
+
+        if (!item) {
+          res.status(StatusCodes.NOT_FOUND);
+        }
+
+        res.status(StatusCodes.ACCEPTED).json(item);
+      } catch (e) {
+        next(e);
+      }
     },
-    post: (req, res) => {
-      prisma.user.create({
-        data: {},
-      });
+    post: (req, res, next) => {
+      try {
+        const item = model.create({ data: req.body });
+
+        res.status(StatusCodes.ACCEPTED).json(item);
+      } catch (e) {
+        next(e);
+      }
     },
-    put: (req, res) => {
-      res.send(`PUT ${schemaName}`);
+    patch: (req, res, next) => {
+      try {
+        const item = model.update({
+          where: { id: req.params.id },
+          data: req.body,
+        });
+
+        res.status(StatusCodes.ACCEPTED).json(item);
+      } catch (e) {
+        next(e);
+      }
     },
-    delete: (req, res) => {
-      res.send(`DELETE ${schemaName}`);
+    delete: (req, res, next) => {
+      try {
+        model.delete({ where: { id: req.params.id } });
+
+        res.status(StatusCodes.NO_CONTENT);
+      } catch (e) {
+        next(e);
+      }
     },
   };
-};
+}

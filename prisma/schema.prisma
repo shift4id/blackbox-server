@@ -38,7 +38,7 @@ model Thought {
   id        Int         @id @default(autoincrement())
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  content   String
+  content   String      @db.Char(255)
   type      ThoughtType
   mood      Mood
   sphereId  Int         @unique
