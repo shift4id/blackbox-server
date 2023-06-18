@@ -19,11 +19,6 @@ const upload = multer({
 
 const uploadAudio = upload.single("audio");
 
-const handleFiles = async (req, res, next) => {
-  console.log(req.file);
-  res.send("hello");
-};
-
 const EMOTIONS = [
   "Calmness",
   "Disappointment",
@@ -192,8 +187,7 @@ const postMessage = async (req, res, next) => {
   // send message to hume
   // await response from hume
   // upon response, execute all the gpt commands
-  console.log("URLS:", req.body.urls)
-  const job = await submitToHume(req.body.urls);
+  const job = await submitToHume([req.file.url]);
   console.log("after submitting to hume", job)
   await new Promise((resolve) => setTimeout(resolve, 5000));
   // const dummy_id = "d042a073-9535-4f22-baed-03629abcfed4"
@@ -209,7 +203,6 @@ const postMessage = async (req, res, next) => {
 module.exports = {
   submitToHume,
   uploadAudio,
-  handleFiles,
   getPredictions,
   postMessage,
   combinePredictions,
