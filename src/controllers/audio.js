@@ -68,7 +68,7 @@ const receiveFromHume = async (job_id) => {
         },
       });
 
-      res.send(requestData);
+      return data
     })
     .catch((error) => console.error(error));
     return emotions;
@@ -112,7 +112,7 @@ const thoughtToSpheres = async (text) => {
     ],
   });
   console.log("ChatGPT data:", chatGPT.data)
-  return chatGPT.data.choices[0].message.content;
+  return chatGPT.data.choices[0].message.content.split(",");
 };
 
 const thoughtToEmotions = async (text, textEmotions) => {
@@ -130,7 +130,7 @@ const thoughtToEmotions = async (text, textEmotions) => {
   });
 
   const emotions = chatGPT.data.choices[0].message.content;
-  return emotions;
+  return JSON.parse(emotions);
 };
 
 const combinePredictions = async (emotions, text) => {
