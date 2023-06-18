@@ -6,7 +6,6 @@ function restHelper(model) {
     get: async (req, res, next) => {
       try {
         const item = model.findUnique({ where: req.query });
-
         if (!item) {
           res.status(StatusCodes.NOT_FOUND);
         }
@@ -20,7 +19,7 @@ function restHelper(model) {
     post: async (req, res, next) => {
       try {
         const item = model.create({ data: req.body });
-
+        item.then();
         res.status(StatusCodes.ACCEPTED).json(item);
         next();
       } catch (e) {
