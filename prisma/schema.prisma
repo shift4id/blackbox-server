@@ -1,23 +1,3 @@
-enum Mood {
-  ANGRY
-  ANXIOUS
-  CALM
-  CONFUSED
-  DEPRESSED
-  EXCITED
-  HAPPY
-  HOPEFUL
-  SAD
-  STRESSED
-}
-
-enum ThoughtType {
-  IDEA
-  MEMORY
-  PLAN
-  WORRY
-}
-
 enum MediaType {
   VIDEO
   AUDIO
@@ -26,8 +6,7 @@ enum MediaType {
 
 model Media {
   id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  created   DateTime  @default(now())
   type      MediaType
   url       String
   thoughtId Int       @unique
@@ -35,23 +14,38 @@ model Media {
 }
 
 model Thought {
-  id        Int         @id @default(autoincrement())
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  content   String      @db.Char(255)
-  type      ThoughtType
-  mood      Mood
-  sphereId  Int         @unique
-  sphere    Sphere      @relation(fields: [sphereId], references: [id])
-  Media     Media?
+  id              Int               @id @default(autoincrement())
+  created         DateTime          @default(now())
+  content         String            @db.Char(281)
+  ThoughtToSphere ThoughtToSphere[]
+  Emotion         Emotion[]
+  Media           Media?
 }
 
 model Sphere {
-  id       Int       @id @default(autoincrement())
-  title    String    @unique
-  user     User      @relation(fields: [userId], references: [id])
-  userId   Int       @unique
-  thoughts Thought[]
+  id              Int               @id @default(autoincrement())
+  created         DateTime          @default(now())
+  title           String            @unique
+  user            User              @relation(fields: [userId], references: [id])
+  userId          Int               @unique
+  ThoughtToSphere ThoughtToSphere[]
+}
+
+model ThoughtToSphere {
+  thoughtId Int
+  sphereId  Int
+  thought   Thought @relation(fields: [thoughtId], references: [id])
+  sphere    Sphere  @relation(fields: [sphereId], references: [id])
+
+  @@id([thoughtId, sphereId])
+}
+
+model Emotion {
+  id        Int      @id @default(autoincrement())
+  created   DateTime @default(now())
+  emotion   String
+  thoughtId Int
+  thought   Thought  @relation(fields: [thoughtId], references: [id])
 }
 
 model User {
