@@ -39,9 +39,26 @@ const EMOTIONS = [
 
 const CATEGORIES = ["Gym", "Academics", "Friends", "Family", "Math"]
 
+const submitText = async (text) => {
+  const data = JSON.stringify({
+    data: text,
+    models: {
+      language: {
+        granularity: "passage",
+      },
+    },
+    raw_text: true,
+  });
+  const result = await hume.start_job(data, {'content-type':'application/json; charset=utf-8'})
+  .then(({ data }) => { console.log(data); return data})
+  .catch((error) => console.error(error))
+  return result
+}
+
 const submitToHume = async (urls) => {
   console.log("Submitting to Hume")
   console.log("URLS:", urls)
+
   const data = await hume.start_job(JSON.stringify({"models":{"face":{"fps_pred":3,"prob_threshold":0.99,"identify_faces":false,"min_face_size":60,"save_faces":false},"prosody":{"granularity":"utterance","identify_speakers":false,"window":{"length":4,"step":1}},"language":{"granularity":"word","identify_speakers":false},"ner":{"identify_speakers":false}},"transcription":{"language":null},"urls": urls,"notify":false}), {
   'content-type': 'application/json; charset=utf-8'
 })
@@ -178,22 +195,15 @@ const postMessage = async (req, res, next) => {
   console.log("URLS:", req.body.urls)
   const job = await submitToHume(req.body.urls);
   console.log("after submitting to hume", job)
-  // await new Promise((resolve) => setTimeout(resolve, 5000));
-  const dummy_id = "a63c09d2-bd84-443b-8df1-a0fa33d46f96"
-  const hume_data = await receiveFromHume(dummy_id);
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+  // const dummy_id = "d042a073-9535-4f22-baed-03629abcfed4"
+  const hume_data = await receiveFromHume(job.job_id);
   var emotions = processHumeEmotions(hume_data);
-  var text = {}
-  // change this  
-  if (req.body.isText) {
-    text = processHumeText(hume_data);
-  } else 
-  {
-    text = processAudio(req.body.urls);
-  }
+  var text = processHumeText(hume_data);
   
   const spheres = await thoughtToSpheres(text)
   const emotionsRanking = await thoughtToEmotions(text)
-  res.send({"spheres": spheres, "emotionsRanking": emotionsRanking})  
+  res.send({"text": text, "spheres": spheres, "emotionsRanking": emotionsRanking})  
 };
 
 module.exports = {
