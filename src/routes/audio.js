@@ -5,5 +5,7 @@ const router = express.Router();
 
 router.post("/", audio.submitAudio);
 router.get("/", audio.getPredictions);
+router.get("/combine", audio.combinePredictions)
+router.get("/suggest", audio.giveRecommendations)
 
 module.exports = router;

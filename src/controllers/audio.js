@@ -1,4 +1,5 @@
 const hume = require("../utils/hume");
+const openai = require("../utils/openai");
 
 const submitAudio = async (req, res, next) => {
   hume
@@ -30,15 +31,46 @@ const getPredictions = async (req, res, next) => {
           },
         },
       });
-      const parsedData = JSON.parse(requestData);
-      // const t = requestData.language.predictions;
-      // res.send(parsedData)
+      
       res.send(requestData);
     })
     .catch((err) => console.error(err));
 };
 
+// TAKES IN emotions: [{name_of_emotion: scale}, ...] and a text file,
+// Submits that to GBT
+const combinePredictions = async (req, res, next) => {
+  const prompt = `Hello. Provided this text message about what I did today, and a list of emotions with a score of 0 to 1, where 0 means the emotion was not detected, and 1 means the emotion was highly detected, 
+  please return the top 3 activities you believe are tied to this text message, and for each activity which is described using 4-6 words,
+  the top three emotions tied to the activity with the corresponding percentages of how prevalent that emotion was,
+  such that the three percentages are normalized to add up to 100%. Here is the following text message: ${req.body.thought}, and here is the list of emotions: ${req.body.emotions}. Provide this to me in the format of a JSON object, with absolutely no other text provided. I want the JSON object as a list of activities, with the title activity, and where each activity then has two attributes, description, and emotions. Title them exactly like this.`;
+  const chatGBTresults = await openai.createChatCompletion({
+    model: "gpt-4",
+    messages: [
+      { role: "system", content: "You are a helpful assistant" },
+      { role: "user", content: prompt },
+    ],
+  })
+  const activities = chatGBTresults.data.choices[0].message.content
+  res.send(activities)
+};
+
+const giveRecommendations = async (req, res, next) => {
+  const prompt = `Hello. Provided this text message about what I did today, and a list of emotions with a score of 0 to 1, give me 5 actionable suggestions for what I can do to improve my well being. 
+  Also give me a brief summary analysis of what I've been doing and how it's making me feel. Give this to me in the format of a JSON object with the following attributes: suggestions, which is a list of these five suggestions, and summary. 
+  For each suggestion, give it to me in the format of just one attribute, and rank the attributes in terms of their importance.`
+  const chatGBTresults = await openai.createChatCompletion({
+    model: "gpt-4",
+    messages: [
+      { role: "system", content: "You are a helpful assistant" },
+      { role: "user", content: prompt },
+    ]
+  })
+}
+
 module.exports = {
   submitAudio,
   getPredictions,
+  combinePredictions,
+  giveRecommendations
 };
