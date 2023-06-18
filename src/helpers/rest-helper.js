@@ -1,8 +1,9 @@
 const { StatusCodes } = require("http-status-codes");
 
 function restHelper(model) {
+  
   return {
-    get: (req, res, next) => {
+    get: async (req, res, next) => {
       try {
         const item = model.findUnique({ where: req.query });
 
@@ -11,20 +12,22 @@ function restHelper(model) {
         }
 
         res.status(StatusCodes.ACCEPTED).json(item);
+        next();
       } catch (e) {
         next(e);
       }
     },
-    post: (req, res, next) => {
+    post: async (req, res, next) => {
       try {
         const item = model.create({ data: req.body });
 
         res.status(StatusCodes.ACCEPTED).json(item);
+        next();
       } catch (e) {
         next(e);
       }
     },
-    patch: (req, res, next) => {
+    patch: async (req, res, next) => {
       try {
         const item = model.update({
           where: { id: req.params.id },
@@ -32,18 +35,23 @@ function restHelper(model) {
         });
 
         res.status(StatusCodes.ACCEPTED).json(item);
+        next();
       } catch (e) {
         next(e);
       }
     },
-    delete: (req, res, next) => {
+    delete: async (req, res, next) => {
       try {
         model.delete({ where: { id: req.params.id } });
 
         res.status(StatusCodes.NO_CONTENT);
+        next()
       } catch (e) {
         next(e);
       }
-    },
+    }
   };
 }
+
+module.exports = restHelper
+
